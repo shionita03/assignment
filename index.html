@@ -1,116 +1,96 @@
 <html>
 <head></head>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-<script lang="js">
-  async function run() {
-    const trainingUrl = './data/wdbc-train.csv';
-
-    // Specify the label column
-    const trainingData = tf.data.csv(trainingUrl, {
-      columnConfigs: {
-        'diagnosis': {
-          isLabel: true,
-        },
-      },
-    });
-
-    // Convert the training data into arrays
-    const convertedTrainingData = trainingData
-      .map(({ xs, ys }) => {
-	  console.log("Astafiruloh ------ ")
-	  console.log(xs)
-	  console.log(ys)
-	  console.log(Number(ys.diagnosis))
-        return {
-          xs: Object.values(xs),
-          ys: Number(ys.diagnosis),
-        };
-      })
-      .batch(10)
-      .map(({ xs, ys }) => {
-        return {
-          xs: xs,
-          ys: ys.squeeze(), // Flatten labels to shape [batch_size]
-        };
-      });
-
-    const testingUrl = './data/wdbc-test.csv';
-
-    // Specify the label column in the testing data
-    const testingData = tf.data.csv(testingUrl, {
-      columnConfigs: {
-        'diagnosis': {
-          isLabel: true,
-        },
-      },
-    });
-
-    // Convert the testing data into arrays
-    const convertedTestingData = testingData
-      .map(({ xs, ys }) => {
-        return {
-          xs: Object.values(xs),
-          ys: Number(ys.diagnosis),
-        };
-      })
-      .batch(10)
-      .map(({ xs, ys }) => {
-        return {
-          xs: xs,
-          ys: ys.squeeze(), // Flatten labels to shape [batch_size]
-        };
-      });
-
-    // Specify the number of features
-    const numOfFeatures = 30;
-
-    // Create the neural network model
-    const model = tf.sequential();
-
-    model.add(
-      tf.layers.dense({
-        inputShape: [numOfFeatures],
-        units: 16,
-        activation: 'relu',
-      })
-    );
-    model.add(
-      tf.layers.dense({
-        units: 8,
-        activation: 'relu',
-      })
-    );
-    model.add(
-      tf.layers.dense({
-        units: 1,
-        activation: 'sigmoid',
-      })
-    );
-
-    // Compile the model
-    model.compile({
-      optimizer: 'rmsprop',
-      loss: 'binaryCrossentropy',
-      metrics: ['accuracy'],
-    });
-
-    // Train and save the model
-    await model.fitDataset(convertedTrainingData, {
-      epochs: 100,
-      validationData: convertedTestingData,
-      callbacks: {
-        onEpochEnd: async (epoch, logs) => {
-          console.log(
-            'Epoch: ' + epoch + ' Loss: ' + logs.loss + ' Accuracy: ' + logs.acc
-          );
-        },
-      },
-    });
-    await model.save('downloads://my_model');
-  }
-  run();
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script lang="js">
+        
+        async function run(){
+            const trainingUrl = './data/wdbc-train.csv';
+            
+            // Specify the 'diagnosis' column as the label
+            const trainingData = tf.data.csv(trainingUrl, {
+                columnConfigs: {
+                    'diagnosis': {
+                        isLabel: true
+                    }
+                }
+            });
+            
+            // Convert the training data into batches of features (xs) and labels (ys)
+            const convertedTrainingData = trainingData.map(({xs, ys}) => {
+                return {xs: Object.values(xs), ys: ys.diagnosis};
+            }).batch(32);
+                  
+            const testingUrl = './data/wdbc-test.csv';
+            
+            // Specify the 'diagnosis' column as the label for testing data
+            const testingData = tf.data.csv(testingUrl, {
+                columnConfigs: {
+                    'diagnosis': {
+                        isLabel: true
+                    }
+                }
+            });
+            
+            // Convert the testing data into batches of features (xs) and labels (ys)
+            const convertedTestingData = testingData.map(({xs, ys}) => {
+                return {xs: Object.values(xs), ys: ys.diagnosis};
+            }).batch(32);
+                    
+    
+            // Specify the number of features (excluding ID and diagnosis)
+            const numOfFeatures = 30;
+            
+                
+            // Create a neural network with dense layers
+            const model = tf.sequential();
+            
+            // Add the first hidden layer with ReLU activation
+            model.add(tf.layers.dense({
+                inputShape: [numOfFeatures],
+                units: 16,
+                activation: 'relu'
+            }));
+            
+            // Add a second hidden layer with ReLU activation
+            model.add(tf.layers.dense({
+                units: 16,
+                activation: 'relu'
+            }));
+            
+            // Add the output layer with sigmoid activation for binary classification
+            model.add(tf.layers.dense({
+                units: 1,
+                activation: 'sigmoid'
+            }));
+    
+                
+            // Compile the model with binaryCrossentropy loss, rmsprop optimizer, and accuracy metric
+            model.compile({
+                loss: 'binaryCrossentropy',
+                optimizer: tf.train.rmsprop(),
+                metrics: ['accuracy']
+            });
+                
+                
+            // Train the model using the training dataset and validate on the testing dataset
+            await model.fitDataset(convertedTrainingData, 
+                             {
+                                 epochs: 100,
+                                 validationData: convertedTestingData,
+                                 callbacks: {
+                                     onEpochEnd: async (epoch, logs) => {
+                                         console.log(`Epoch: ${epoch + 1} | Loss: ${logs.loss.toFixed(4)} | Accuracy: ${(logs.acc * 100).toFixed(2)}%`);
+                                     }
+                                 }
+                             });
+                             
+            // Save the trained model for later use
+            await model.save('downloads://my_model');
+        }
+        
+        // Run the training process
+        run();
+    </script>
 <body>
-Test 3
 </body>
 </html>
