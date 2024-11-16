@@ -1,97 +1,17 @@
 <html>
-<head></head>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-    <script lang="js">
-        
-        async function run(){
-            const trainingUrl = './data/wdbc-train.csv';
-            
-            // Specify the 'diagnosis' column as the label
-            const trainingData = tf.data.csv(trainingUrl, {
-                columnConfigs: {
-                    'diagnosis': {
-                        isLabel: true
-                    }
-                }
-            });
-            
-            // Convert the training data into batches of features (xs) and labels (ys)
-            const convertedTrainingData = trainingData.map(({xs, ys}) => {
-                return {xs: Object.values(xs), ys: Object.values(ys)};
-            }).batch(32);
-                  
-            const testingUrl = './data/wdbc-test.csv';
-            
-            // Specify the 'diagnosis' column as the label for testing data
-            const testingData = tf.data.csv(testingUrl, {
-                columnConfigs: {
-                    'diagnosis': {
-                        isLabel: true
-                    }
-                }
-            });
-            
-            // Convert the testing data into batches of features (xs) and labels (ys)
-            const convertedTestingData = testingData.map(({xs, ys}) => {
-                return {xs: Object.values(xs), ys: Object.values(ys)};
-            }).batch(32);
-                    
-            // Specify the number of features (excluding ID and diagnosis)
-            const numOfFeatures = 30;
-                
-            // Create a neural network with dense layers
-            const model = tf.sequential();
-            
-            // Add the first hidden layer with ReLU activation
-            model.add(tf.layers.dense({
-                inputShape: [numOfFeatures],
-                units: 16,
-                activation: 'relu'
-            }));
-            
-            // Add a second hidden layer with ReLU activation
-            model.add(tf.layers.dense({
-                units: 16,
-                activation: 'relu'
-            }));
-            
-            // Add the output layer with sigmoid activation for binary classification
-            model.add(tf.layers.dense({
-                units: 1,
-                activation: 'sigmoid'
-            }));
-    
-                
-            // Compile the model with binaryCrossentropy loss, rmsprop optimizer (with learning rate), and accuracy metric
-            const learningRate = 0.001; // Define the learning rate
-            const optimizer = tf.train.rmsprop(learningRate); // Initialize RMSProp with the learning rate
-            
-            model.compile({
-                loss: 'binaryCrossentropy',
-                optimizer: optimizer,
-                metrics: ['accuracy']
-            });
-                
-            // Train the model using the training dataset and validate on the testing dataset
-            await model.fitDataset(convertedTrainingData, 
-                             {
-                                 epochs: 100,
-                                 validationData: convertedTestingData,
-                                 callbacks: {
-                                     onEpochEnd: async (epoch, logs) => {
-                                         console.log(`Epoch: ${epoch + 1} | Loss: ${logs.loss.toFixed(4)} | Accuracy: ${(logs.acc * 100).toFixed(2)}%`);
-                                     }
-                                 }
-                             });
-                             
-            // Save the trained model for later use
-            await model.save('downloads://my_model');
-        }
-        
-        // Run the training process
-        run();
-    </script>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.1.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+
+</head>
 <body>
-Build 1
+    <h1>Fashion Classifier!</h1>
+    <canvas id="canvas" width="280" height="280" style="position:absolute;top:100;left:100;border:8px solid;"></canvas>
+    <img id="canvasimg" style="position:absolute;top:10%;left:52%;width:280;height:280;display:none;">
+    <input type="button" value="classify" id="sb" size="48" style="position:absolute;top:400;left:100;">
+    <input type="button" value="clear" id="cb" size="23" style="position:absolute;top:400;left:180;">
+    <script src="fashion-data.js" type="module"></script>
+    <script src="C1_W2_Assignment.js" type="module"></script>
+    <!-- <script src="C1_W2_Assignment_Solution.js" type="module"></script> -->
 </body>
 </html>
