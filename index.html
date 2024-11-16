@@ -36,10 +36,8 @@
                 return {xs: Object.values(xs), ys: ys.diagnosis};
             }).batch(32);
                     
-    
             // Specify the number of features (excluding ID and diagnosis)
             const numOfFeatures = 30;
-            
                 
             // Create a neural network with dense layers
             const model = tf.sequential();
@@ -64,13 +62,15 @@
             }));
     
                 
-            // Compile the model with binaryCrossentropy loss, rmsprop optimizer, and accuracy metric
+            // Compile the model with binaryCrossentropy loss, rmsprop optimizer (with learning rate), and accuracy metric
+            const learningRate = 0.001; // Define the learning rate
+            const optimizer = tf.train.rmsprop(learningRate); // Initialize RMSProp with the learning rate
+            
             model.compile({
                 loss: 'binaryCrossentropy',
-                optimizer: tf.train.rmsprop(),
+                optimizer: optimizer,
                 metrics: ['accuracy']
             });
-                
                 
             // Train the model using the training dataset and validate on the testing dataset
             await model.fitDataset(convertedTrainingData, 
@@ -92,5 +92,6 @@
         run();
     </script>
 <body>
+Ya
 </body>
 </html>
