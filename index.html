@@ -17,6 +17,9 @@
     // Convert the training data into arrays
     const convertedTrainingData = trainingData
       .map(({ xs, ys }) => {
+	  console.log("Astafiruloh ------ ")
+	  console.log(xs)
+	  console.log(ys)
 	  console.log(Number(ys.diagnosis))
         return {
           xs: Object.values(xs),
@@ -108,6 +111,6 @@
   run();
 </script>
 <body>
-Test 2
+Test 3
 </body>
 </html>
