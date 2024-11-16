@@ -1,0 +1,104 @@
+<html>
+<head></head>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script lang="js">
+        
+        async function run(){
+            const trainingUrl = 'data/wdbc-train.csv';
+            
+            // Specify the column that should be treated as the label.
+            // In this dataset, 'diagnosis' is the label.
+            const trainingData = tf.data.csv(trainingUrl, {
+                
+                columnConfigs: {
+                    'diagnosis': {
+                        isLabel: true
+                    }
+                }
+                
+            });
+            
+            // Convert the training data into arrays.
+            // Extract features (xs) and labels (ys).
+            const convertedTrainingData = trainingData.map(({xs, ys}) => {
+                // Convert feature values to an array
+                const features = Object.values(xs);
+                // Normalize features (optional but recommended)
+                const normalizedFeatures = features.map(x => x / 100); // Adjust divisor as needed
+                return {xs: normalizedFeatures, ys: ys.diagnosis};
+            }).batch(32);
+                  
+            const testingUrl = 'data/wdbc-test.csv';
+            
+            // Specify the column that should be treated as the label in the testing data.
+            const testingData = tf.data.csv(testingUrl, {
+                
+                columnConfigs: {
+                    'diagnosis': {
+                        isLabel: true
+                    }
+                }
+                
+            });
+            
+            // Convert the testing data into arrays.
+            const convertedTestingData = testingData.map(({xs, ys}) => {
+                // Convert feature values to an array
+                const features = Object.values(xs);
+                // Normalize features (using the same method as training data)
+                const normalizedFeatures = features.map(x => x / 100); // Adjust divisor as needed
+                return {xs: normalizedFeatures, ys: ys.diagnosis};
+            }).batch(32);
+              
+
+            // Specify the number of features.
+            // According to the dataset, there are 30 feature columns.
+            const numOfFeatures = 30;
+            
+            
+            // Create a neural network model.
+            const model = tf.sequential();
+            
+            // Add the first hidden layer with ReLU activation.
+            model.add(tf.layers.dense({
+                inputShape: [numOfFeatures],
+                units: 64,
+                activation: 'relu'
+            }));
+            
+            // Add a second hidden layer with ReLU activation.
+            model.add(tf.layers.dense({
+                units: 32,
+                activation: 'relu'
+            }));
+            
+            // Add the output layer with a sigmoid activation function.
+            model.add(tf.layers.dense({
+                units: 1,
+                activation: 'sigmoid'
+            }));
+            
+            
+            // Compile the model using binaryCrossentropy loss, rmsprop optimizer with defined learning rate, and accuracy metric.
+            model.compile({
+                loss: 'binaryCrossentropy',
+                optimizer: tf.train.rmsprop(0.001), // Define the learning rate here
+                metrics: ['accuracy']
+            });
+            
+            
+            await model.fitDataset(convertedTrainingData, 
+                             {epochs:100,
+                              validationData: convertedTestingData,
+                              callbacks:{
+                                  onEpochEnd: async(epoch, logs) =>{
+                                      console.log(`Epoch: ${epoch + 1} Loss: ${logs.loss.toFixed(4)} Accuracy: ${(logs.acc * 100).toFixed(2)}% Val Loss: ${logs.val_loss.toFixed(4)} Val Accuracy: ${(logs.val_acc * 100).toFixed(2)}%`);
+                                  }
+                              }});
+            await model.save('downloads://my_model');
+        }
+        run();
+    </script>
+<body>
+</body>
+</html>
