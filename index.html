@@ -19,7 +19,7 @@
             const convertedTrainingData = trainingData.map(({xs, ys}) => {
                 return {
                     xs: Object.values(xs),
-                    ys: Object.values(ys)
+                    ys: ys.diagnosis // Extract scalar label
                 };
             }).batch(10);
                   
@@ -38,7 +38,7 @@
             const convertedTestingData = testingData.map(({xs, ys}) => {
                 return {
                     xs: Object.values(xs),
-                    ys: Object.values(ys)
+                    ys: ys.diagnosis // Extract scalar label
                 };
             }).batch(10);
                   
@@ -83,5 +83,6 @@
         run();
     </script>
 <body>
+Hello 1
 </body>
 </html>
