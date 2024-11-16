@@ -17,7 +17,7 @@
             
             // Convert the training data into batches of features (xs) and labels (ys)
             const convertedTrainingData = trainingData.map(({xs, ys}) => {
-                return {xs: Object.values(xs), ys: ys.diagnosis};
+                return {xs: Object.values(xs), ys: Object.values(ys)};
             }).batch(32);
                   
             const testingUrl = './data/wdbc-test.csv';
@@ -33,7 +33,7 @@
             
             // Convert the testing data into batches of features (xs) and labels (ys)
             const convertedTestingData = testingData.map(({xs, ys}) => {
-                return {xs: Object.values(xs), ys: ys.diagnosis};
+                return {xs: Object.values(xs), ys: Object.values(ys)};
             }).batch(32);
                     
             // Specify the number of features (excluding ID and diagnosis)
@@ -92,6 +92,6 @@
         run();
     </script>
 <body>
-Ya
+Build 1
 </body>
 </html>
