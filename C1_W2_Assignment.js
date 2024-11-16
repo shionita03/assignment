@@ -59,7 +59,7 @@ function getModel() {
     }));
     
     // Compile the model using the categoricalCrossentropy loss,
-    // the tf.train.adam() optimizer, and `acc` for your metrics.
+    // the tf.train.adam() optimizer, and `accuracy` for your metrics.
     model.compile({
         optimizer: tf.train.adam(),
         loss: 'categoricalCrossentropy',
@@ -78,6 +78,7 @@ async function train(model, data) {
     // use a height of 1000px for the styles. 
     const container = { name: 'Model Training', styles: { height: '1000px' } };
     
+    
     // Use tfvis.show.fitCallbacks() to setup the callbacks. 
     // Use the container and metrics defined above as the parameters.
     const fitCallbacks = tfvis.show.fitCallbacks(container, metrics);
@@ -86,25 +87,20 @@ async function train(model, data) {
     const TRAIN_DATA_SIZE = 6000;
     const TEST_DATA_SIZE = 1000;
     
-    // Get the training batches and resize them. Remember to put your code
-    // inside a tf.tidy() clause to clean up all the intermediate tensors.
-    // HINT: Take a look at the MNIST example.
-    let trainXs, trainYs;
-    await tf.tidy(() => {
-        const d = data.nextTrainBatch(TRAIN_DATA_SIZE);
-        trainXs = d.xs.reshape([TRAIN_DATA_SIZE, 28, 28, 1]);
-        trainYs = d.labels;
+    // Get the training batches and resize them. Normalize the data by dividing by 255.
+    // Properly handle tf.tidy to prevent disposing of tensors needed for training.
+    const trainBatch = data.nextTrainBatch(TRAIN_DATA_SIZE);
+    const trainXs = tf.tidy(() => {
+        return trainBatch.xs.reshape([TRAIN_DATA_SIZE, 28, 28, 1]).div(255);
     });
+    const trainYs = trainBatch.labels;
     
-    // Get the testing batches and resize them. Remember to put your code
-    // inside a tf.tidy() clause to clean up all the intermediate tensors.
-    // HINT: Take a look at the MNIST example.
-    let testXs, testYs;
-    await tf.tidy(() => {
-        const d = data.nextTestBatch(TEST_DATA_SIZE);
-        testXs = d.xs.reshape([TEST_DATA_SIZE, 28, 28, 1]);
-        testYs = d.labels;
+    // Get the testing batches and resize them. Normalize the data by dividing by 255.
+    const testBatch = data.nextTestBatch(TEST_DATA_SIZE);
+    const testXs = tf.tidy(() => {
+        return testBatch.xs.reshape([TEST_DATA_SIZE, 28, 28, 1]).div(255);
     });
+    const testYs = testBatch.labels;
     
     return model.fit(trainXs, trainYs, {
         batchSize: BATCH_SIZE,
@@ -112,6 +108,11 @@ async function train(model, data) {
         epochs: 10,
         shuffle: true,
         callbacks: fitCallbacks
+    }).then((history) => {
+        // Dispose tensors to free memory
+        trainXs.dispose();
+        testXs.dispose();
+        return history;
     });
 }
 
@@ -151,6 +152,12 @@ function save() {
                       "Sneaker",  "Bag", "Ankle boot"];
             
     alert(classNames[pIndex]);
+    
+    // Dispose tensors to free memory
+    raw.dispose();
+    resized.dispose();
+    tensor.dispose();
+    prediction.dispose();
 }
     
 function init() {
