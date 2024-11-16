@@ -4,7 +4,7 @@
     <script lang="js">
         
         async function run(){
-            const trainingUrl = '/data/wdbc-train.csv';
+            const trainingUrl = 'https://github.com/shionita03/assignment/tree/main/data/wdbc-train.csv';
             
             // Specify the label column
             const trainingData = tf.data.csv(trainingUrl, {
@@ -23,7 +23,7 @@
                 };
             }).batch(10);
                   
-            const testingUrl = '/data/wdbc-test.csv';
+            const testingUrl = 'https://github.com/shionita03/assignment/tree/main/data/wdbc-test.csv';
             
             // Specify the label column in the testing data
             const testingData = tf.data.csv(testingUrl, {
